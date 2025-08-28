@@ -168,5 +168,3 @@ if uploaded_files:
 else:
     st.info("Please upload one or more PDF files to get started.")
 
-st.markdown("---")
-st.markdown("Powered by Google Gemini")
