@@ -39,8 +39,9 @@ safety_settings = [
     {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_MEDIUM_AND_ABOVE"},
 ]
 
+# Corrected the model name from "gemini-1.0-pro" to "gemini-pro"
 model = genai.GenerativeModel(
-    model_name="gemini-1.0-pro",
+    model_name="gemini-pro",
     generation_config=generation_config,
     safety_settings=safety_settings,
 )
@@ -152,6 +153,3 @@ if uploaded_files:
 
 else:
     st.info("Please upload one or more PDF files to get started.")
-
-st.markdown("---")
-st.markdown("Powered by Google Gemini")
