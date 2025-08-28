@@ -102,7 +102,7 @@ def generate_table_from_resumes(resume_texts):
 
 st.set_page_config(page_title="Gemini Resume Analyzer", page_icon="📄", layout="wide")
 
-st.title("📄 Gemini Resume Analyzer")
+st.title("📄 FMF Resume Analyzer")
 st.markdown("Upload multiple PDF resumes to generate a comparative table of candidate details.")
 
 # --- Sidebar for File Upload ---
