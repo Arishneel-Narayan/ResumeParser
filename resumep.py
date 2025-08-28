@@ -39,9 +39,9 @@ safety_settings = [
     {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_MEDIUM_AND_ABOVE"},
 ]
 
-# Corrected the model name from "gemini-1.0-pro" to "gemini-pro"
+# Corrected the model name to the latest version to resolve the 404 error.
 model = genai.GenerativeModel(
-    model_name="gemini-pro",
+    model_name="gemini-1.5-flash-latest",
     generation_config=generation_config,
     safety_settings=safety_settings,
 )
@@ -93,7 +93,9 @@ def generate_table_from_resumes(resume_texts):
         response = model.generate_content(prompt)
         return response.text
     except Exception as e:
-        return f"An error occurred while calling the Gemini API: {e}"
+        # Provide a more detailed error message to the user
+        st.error(f"An error occurred while calling the Gemini API: {e}")
+        return "Failed to generate content from the API."
 
 
 # --- Streamlit App UI ---
@@ -131,25 +133,40 @@ if uploaded_files:
                 generated_content = generate_table_from_resumes(all_resume_texts)
 
                 # 3. Display the result
-                st.subheader("Candidate Comparison Table")
-                st.markdown(generated_content)
+                if "Failed to generate" not in generated_content:
+                    st.subheader("Candidate Comparison Table")
+                    st.markdown(generated_content)
 
-                # Optional: Try to convert markdown table to a Pandas DataFrame for better display
-                try:
-                    # A simple way to convert markdown table to list of lists
-                    lines = generated_content.strip().split('\n')
-                    header = [h.strip() for h in lines[0].strip('|').split('|')]
-                    data = []
-                    for line in lines[2:]: # Skip header and separator
-                        rows = [r.strip() for r in line.strip('|').split('|')]
-                        data.append(rows)
+                    # Optional: Try to convert markdown table to a Pandas DataFrame for better display
+                    try:
+                        # A simple way to convert markdown table to list of lists
+                        lines = generated_content.strip().split('\n')
+                        # Filter out any empty lines that might cause errors
+                        lines = [line for line in lines if line.strip() and '|' in line]
+                        if len(lines) > 1: # Ensure there is a header and at least one data row
+                            header = [h.strip() for h in lines[0].strip('|').split('|')]
+                            data = []
+                            # Start from index 2 to skip header and separator line
+                            for line in lines[2:]:
+                                rows = [r.strip() for r in line.strip('|').split('|')]
+                                # Ensure row has the same number of columns as the header
+                                if len(rows) == len(header):
+                                    data.append(rows)
 
-                    df = pd.DataFrame(data, columns=header)
-                    st.subheader("Formatted Data Table")
-                    st.dataframe(df, use_container_width=True)
-                except Exception as e:
-                    st.info("Could not automatically convert the output to a formatted table, displaying raw output above.")
+                            if data:
+                                df = pd.DataFrame(data, columns=header)
+                                st.subheader("Formatted Data Table")
+                                st.dataframe(df, use_container_width=True)
+                            else:
+                                st.info("Could not parse the data from the markdown table.")
+                        else:
+                            st.info("The generated content was not in a valid markdown table format.")
+                    except Exception as e:
+                        st.warning(f"Could not automatically convert the output to a formatted table, displaying raw output above. Error: {e}")
 
 
 else:
     st.info("Please upload one or more PDF files to get started.")
+
+st.markdown("---")
+st.markdown("Powered by Google Gemini")
